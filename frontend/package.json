@@ -1,0 +1,12 @@
+{
+  "name": "interview-platform-frontend",
+  "version": "1.0.0",
+  "description": "AI Interview Platform Frontend",
+  "scripts": {
+    "start": "npx serve . -p 3000",
+    "dev": "npx live-server pages/ --port=3000 --open=index.html --ignore=node_modules"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+}

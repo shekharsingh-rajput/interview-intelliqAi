@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — IntelliqAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #08090f;
+      --surface: #0f1018;
+      --surface2: #161824;
+      --border: rgba(255,255,255,0.08);
+      --accent: #7c6dfa;
+      --accent2: #e879f9;
+      --accent3: #22d3ee;
+      --text: #f0f0f5;
+      --muted: #6b7280;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --sidebar: 240px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+    h1,h2,h3,h4,h5,h6 { font-family: 'Syne', sans-serif; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-user {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; font-family: 'Syne', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .user-info .name { font-weight: 600; font-size: 14px; }
+    .user-info .email { font-size: 12px; color: var(--muted); }
+
+    .nav-links { flex: 1; padding: 16px 12px; overflow-y: auto; }
+
+    .nav-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      color: var(--muted); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none; margin-bottom: 4px;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: rgba(124,109,250,0.15); color: var(--accent); }
+    .nav-link .icon { font-size: 18px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-logout {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
+      background: none; border: none;
+      color: var(--muted); font-size: 14px; cursor: pointer;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,0.1); color: var(--error); }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar);
+      flex: 1; min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    .topbar {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar h1 { font-size: 22px; font-weight: 700; }
+    .topbar .date { color: var(--muted); font-size: 14px; }
+
+    .content { padding: 32px; flex: 1; }
+
+    /* TAB SECTIONS */
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    /* STAT CARDS */
+    .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .stat-card.cyan::before { background: linear-gradient(90deg, var(--accent3), #38bdf8); }
+    .stat-card.green::before { background: linear-gradient(90deg, var(--success), #34d399); }
+    .stat-card.orange::before { background: linear-gradient(90deg, var(--warning), #fb923c); }
+
+    .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-val { font-size: 36px; font-weight: 800; font-family: 'Syne', sans-serif; }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* CHART CARDS */
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 32px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+    }
+
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+    /* INTERVIEW TABLE */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .score-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    }
+
+    .difficulty-badge {
+      padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    }
+
+    .status-badge {
+      padding: 3px 8px; border-radius: 6px; font-size: 11px;
+    }
+
+    /* START INTERVIEW SECTION */
+    .start-section { max-width: 700px; }
+
+    .domain-grid-select {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .domain-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px;
+      color: var(--muted); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      text-align: center;
+    }
+    .domain-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .domain-btn.selected { background: rgba(124,109,250,0.15); border-color: var(--accent); color: var(--accent); }
+
+    .difficulty-row { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+
+    .diff-btn {
+      flex: 1; min-width: 100px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px;
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      text-align: center; font-family: 'Syne', sans-serif;
+    }
+    .diff-btn.selected { background: rgba(124,109,250,0.15); border-color: var(--accent); color: var(--accent); }
+
+    .question-count-row {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+    }
+
+    .count-label { font-size: 14px; font-weight: 500; flex: 1; }
+    .count-controls { display: flex; align-items: center; gap: 12px; }
+    .count-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .count-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .count-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; min-width: 30px; text-align: center; }
+
+    .camera-toggle {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 28px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .camera-toggle:hover { border-color: rgba(124,109,250,0.3); }
+    .camera-toggle.enabled { border-color: var(--accent); background: rgba(124,109,250,0.08); }
+
+    .toggle-switch {
+      width: 44px; height: 24px; background: var(--border);
+      border-radius: 100px; position: relative; transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      background: white; border-radius: 50%;
+      top: 3px; left: 3px; transition: transform 0.3s;
+    }
+    .camera-toggle.enabled .toggle-switch { background: var(--accent); }
+    .camera-toggle.enabled .toggle-switch::after { transform: translateX(20px); }
+
+    .btn-start {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: white;
+      padding: 16px; border-radius: 12px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,109,250,0.4); }
+    .btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* DETAIL MODAL */
+    .detail-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .detail-overlay.active { opacity: 1; pointer-events: all; }
+
+    .detail-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 90%; max-width: 700px; max-height: 85vh;
+      overflow-y: auto; padding: 32px;
+      transform: scale(0.95); transition: transform 0.3s;
+    }
+    .detail-overlay.active .detail-box { transform: scale(1); }
+
+    .q-item {
+      background: var(--surface2); border-radius: 12px; padding: 20px; margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .q-num { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .q-text { font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
+    .q-answer { font-size: 14px; color: var(--muted); margin-bottom: 12px; padding: 12px; background: var(--bg); border-radius: 8px; line-height: 1.6; }
+    .q-feedback { font-size: 13px; line-height: 1.6; color: #c4b5fd; }
+    .q-score {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    /* Mobile sidebar toggle */
+    .menu-toggle {
+      display: none; background: none; border: none;
+      color: var(--text); font-size: 22px; cursor: pointer; padding: 0;
+    }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 15px; }
+
+    .loading {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px; color: var(--muted);
+    }
+
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-right: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .content { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">intelliqAI</div>
+  <div class="sidebar-user">
+    <div class="avatar" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="name" id="sidebarName">Loading...</div>
+      <div class="email" id="sidebarEmail"></div>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <a class="nav-link active" onclick="showTab('overview')" id="tab-overview">
+      <span class="icon">📊</span> Overview
+    </a>
+    <a class="nav-link" onclick="showTab('start')" id="tab-start">
+      <span class="icon">🚀</span> New Interview
+    </a>
+    <a class="nav-link" onclick="showTab('history')" id="tab-history">
+      <span class="icon">📁</span> History
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="Auth.logout()">
+      <span>🚪</span> Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <h1 id="pageTitle">Overview</h1>
+    </div>
+    <div class="date" id="currentDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- OVERVIEW TAB -->
+    <div class="tab-section active" id="section-overview">
+      <div class="stat-cards" id="statCards">
+        <div class="stat-card purple">
+          <div class="stat-label">Total Interviews</div>
+          <div class="stat-val" id="totalInterviews">—</div>
+          <div class="stat-sub">All time sessions</div>
+        </div>
+        <div class="stat-card cyan">
+          <div class="stat-label">Average Score</div>
+          <div class="stat-val" id="avgScore">—</div>
+          <div class="stat-sub">Across all domains</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Best Score</div>
+          <div class="stat-val" id="bestScore">—</div>
+          <div class="stat-sub">Personal record</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-label">Questions Answered</div>
+          <div class="stat-val" id="totalQs">—</div>
+          <div class="stat-sub">Total practice</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-title">📈 Score History</div>
+          <canvas id="scoreChart" height="100"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">🎯 Domain Performance</div>
+          <canvas id="domainChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ Recent Interviews</div>
+        <div id="recentList">
+          <div class="loading"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- START INTERVIEW TAB -->
+    <div class="tab-section" id="section-start">
+      <div class="start-section">
+        <div class="card" style="margin-bottom:0">
+          <h3 style="font-size:22px;margin-bottom:8px">Configure Your Interview</h3>
+          <p style="color:var(--muted);font-size:14px;margin-bottom:28px">Select a domain and difficulty to get started with AI-powered questions</p>
+
+          <div class="card-title">Select Domain</div>
+          <div class="domain-grid-select" id="domainSelect"></div>
+
+          <div class="card-title">Difficulty Level</div>
+          <div class="difficulty-row" id="difficultySelect">
+            <button class="diff-btn" onclick="selectDiff(this,'Beginner')">🟢 Beginner</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Intermediate')">🟡 Intermediate</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Advanced')">🟠 Advanced</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Expert')">🔴 Expert</button>
+          </div>
+
+          <div class="card-title">Number of Questions</div>
+          <div class="question-count-row">
+            <span class="count-label">Questions per interview</span>
+            <div class="count-controls">
+              <button class="count-btn" onclick="changeCount(-1)">−</button>
+              <span class="count-val" id="countVal">5</span>
+              <button class="count-btn" onclick="changeCount(1)">+</button>
+            </div>
+          </div>
+
+          <div class="card-title">Camera Settings</div>
+          <div class="camera-toggle" id="cameraToggle" onclick="toggleCamera()">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px">📹 Enable Webcam</div>
+              <div style="font-size:12px;color:var(--muted)">Simulates real interview conditions</div>
+            </div>
+            <div class="toggle-switch"></div>
+          </div>
+
+          <button class="btn-start" id="startBtn" onclick="startInterview()">
+            Start Interview →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-section" id="section-history">
+      <div class="card">
+        <div class="card-title">📁 All Interviews</div>
+        <div id="historyList">
+          <div class="loading"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- INTERVIEW DETAIL MODAL -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-box" id="detailBox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <h2 style="font-size:22px" id="detailTitle">Interview Details</h2>
+      <button onclick="closeDetail()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer">✕</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  // Guard: redirect if not logged in
+  if (!Auth.isLoggedIn()) window.location.href = 'index.html';
+
+  const user = Auth.getUser();
+  let stats = null;
+  let selectedDomain = null;
+  let selectedDiff = null;
+  let questionCount = 5;
+  let cameraEnabled = false;
+  let scoreChart = null, domainChart = null;
+
+  const domains = ['JavaScript','Python','Java','C++','React','Node.js','Data Structures','Algorithms','System Design','Database','Machine Learning','DevOps','Cybersecurity','PHP','TypeScript','Vue.js','Angular','MongoDB','SQL','AWS','Docker'];
+
+  // Init
+  document.addEventListener('DOMContentLoaded', () => {
+    setupUser();
+    setupDate();
+    setupDomains();
+    loadStats();
+  });
+
+  function setupUser() {
+    if (!user) return;
+    document.getElementById('sidebarName').textContent = user.name;
+    document.getElementById('sidebarEmail').textContent = user.email;
+    document.getElementById('sidebarAvatar').textContent = user.name[0].toUpperCase();
+  }
+
+  function setupDate() {
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    });
+  }
+
+  function setupDomains() {
+    const grid = document.getElementById('domainSelect');
+    domains.forEach(d => {
+      const btn = document.createElement('button');
+      btn.className = 'domain-btn';
+      btn.textContent = d;
+      btn.onclick = () => selectDomain(btn, d);
+      grid.appendChild(btn);
+    });
+  }
+
+  function showTab(tab) {
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(`section-${tab}`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+
+    const titles = { overview: 'Overview', start: 'New Interview', history: 'Interview History' };
+    document.getElementById('pageTitle').textContent = titles[tab];
+
+    if (tab === 'history') loadHistory();
+    if (tab === 'overview') loadStats();
+
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+
+  function selectDomain(btn, domain) {
+    document.querySelectorAll('.domain-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDomain = domain;
+  }
+
+  function selectDiff(btn, diff) {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDiff = diff;
+  }
+
+  function changeCount(delta) {
+    questionCount = Math.max(3, Math.min(10, questionCount + delta));
+    document.getElementById('countVal').textContent = questionCount;
+  }
+
+  function toggleCamera() {
+    cameraEnabled = !cameraEnabled;
+    const toggle = document.getElementById('cameraToggle');
+    toggle.classList.toggle('enabled', cameraEnabled);
+  }
+
+  async function startInterview() {
+    if (!selectedDomain) return showToast('Please select a domain', 'warning');
+    if (!selectedDiff) return showToast('Please select a difficulty level', 'warning');
+
+    const btn = document.getElementById('startBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating your interview...';
+
+    try {
+      const data = await apiRequest('/interviews/start', {
+        method: 'POST',
+        body: JSON.stringify({
+          domain: selectedDomain,
+          difficulty: selectedDiff,
+          totalQuestions: questionCount,
+          cameraEnabled
+        })
+      });
+
+      // Store interview data and navigate
+      sessionStorage.setItem('activeInterview', JSON.stringify(data.interview));
+      window.location.href = 'interview.html';
+    } catch (error) {
+      showToast(error.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Start Interview →';
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const data = await apiRequest('/interviews/stats/overview');
+      stats = data.stats;
+      renderStats();
+      renderCharts();
+      renderRecent();
+    } catch (e) {
+      console.error('Stats error:', e);
+    }
+  }
+
+  function renderStats() {
+    if (!stats) return;
+    document.getElementById('totalInterviews').textContent = stats.totalInterviews;
+    document.getElementById('avgScore').textContent = stats.averageScore ? `${stats.averageScore}%` : '—';
+    document.getElementById('bestScore').textContent = stats.bestScore ? `${stats.bestScore}%` : '—';
+
+    // Calculate total questions from stats
+    const user = Auth.getUser();
+    document.getElementById('totalQs').textContent = user?.stats?.totalQuestions || 0;
+  }
+
+  function renderCharts() {
+    if (!stats) return;
+
+    // Score history chart
+    const ctx1 = document.getElementById('scoreChart').getContext('2d');
+    if (scoreChart) scoreChart.destroy();
+
+    const history = stats.scoreHistory || [];
+    const labels = history.map((_, i) => `#${i+1}`);
+    const scores = history.map(h => h.score);
+
+    scoreChart = new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: labels.length ? labels : ['No data yet'],
+        datasets: [{
+          label: 'Score %',
+          data: scores.length ? scores : [0],
+          borderColor: '#7c6dfa',
+          backgroundColor: 'rgba(124,109,250,0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#7c6dfa',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            min: 0, max: 100,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#6b7280', callback: v => `${v}%` }
+          },
+          x: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#6b7280' }
+          }
+        }
+      }
+    });
+
+    // Domain chart
+    const ctx2 = document.getElementById('domainChart').getContext('2d');
+    if (domainChart) domainChart.destroy();
+
+    const domainEntries = Object.entries(stats.domainStats || {});
+    const domainLabels = domainEntries.map(([k]) => k);
+    const domainScores = domainEntries.map(([,v]) => v.avgScore);
+    const colors = ['#7c6dfa','#e879f9','#22d3ee','#10b981','#f59e0b','#ef4444','#f97316','#06b6d4'];
+
+    domainChart = new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: domainLabels.length ? domainLabels : ['No data'],
+        datasets: [{
+          data: domainScores.length ? domainScores : [1],
+          backgroundColor: colors.slice(0, domainLabels.length || 1),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#6b7280', boxWidth: 12, padding: 12 } }
+        },
+        cutout: '65%'
+      }
+    });
+  }
+
+  function renderRecent() {
+    const el = document.getElementById('recentList');
+    const recent = stats?.recentInterviews || [];
+
+    if (!recent.length) {
+      el.innerHTML = `<div class="empty-state"><div class="icon">🎯</div><p>No interviews yet. <a onclick="showTab('start')" style="color:var(--accent);cursor:pointer">Start your first one!</a></p></div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Domain</th><th>Difficulty</th><th>Score</th><th>Questions</th><th>Date</th><th></th>
+          </tr></thead>
+          <tbody>${recent.map(renderRow).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderRow(iv) {
+    const sc = iv.overallScore;
+    const color = getScoreColor(sc);
+    const diffColors = { Beginner:'#10b981', Intermediate:'#f59e0b', Advanced:'#f97316', Expert:'#ef4444' };
+    return `<tr>
+      <td><strong>${iv.domain}</strong></td>
+      <td><span class="difficulty-badge" style="background:${diffColors[iv.difficulty]}22;color:${diffColors[iv.difficulty]}">${iv.difficulty}</span></td>
+      <td><span class="score-badge" style="background:${color}22;color:${color}">● ${sc}%</span></td>
+      <td>${iv.questions?.length || 0} / ${iv.totalQuestions}</td>
+      <td style="color:var(--muted);font-size:13px">${formatDate(iv.startedAt)}</td>
+      <td><button onclick="viewDetail('${iv._id}')" style="background:rgba(124,109,250,0.1);border:1px solid rgba(124,109,250,0.3);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">View</button></td>
+    </tr>`;
+  }
+
+  async function loadHistory() {
+    const el = document.getElementById('historyList');
+    el.innerHTML = `<div class="loading"><div class="spinner"></div> Loading...</div>`;
+    try {
+      const data = await apiRequest('/interviews?limit=50');
+      const interviews = data.interviews || [];
+
+      if (!interviews.length) {
+        el.innerHTML = `<div class="empty-state"><div class="icon">📁</div><p>No interviews in history yet.</p></div>`;
+        return;
+      }
+
+      el.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Domain</th><th>Difficulty</th><th>Score</th><th>Questions</th><th>Status</th><th>Date</th><th></th>
+            </tr></thead>
+            <tbody>${interviews.map(renderHistoryRow).join('')}</tbody>
+          </table>
+        </div>`;
+    } catch (e) {
+      el.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load history</p></div>`;
+    }
+  }
+
+  function renderHistoryRow(iv) {
+    const sc = iv.overallScore;
+    const color = getScoreColor(sc);
+    const diffColors = { Beginner:'#10b981', Intermediate:'#f59e0b', Advanced:'#f97316', Expert:'#ef4444' };
+    const statusColors = { completed:'#10b981', 'in-progress':'#f59e0b', abandoned:'#6b7280' };
+    const statusEl = `<span class="status-badge" style="background:${statusColors[iv.status]}22;color:${statusColors[iv.status]}">${iv.status}</span>`;
+    return `<tr>
+      <td><strong>${iv.domain}</strong></td>
+      <td><span class="difficulty-badge" style="background:${diffColors[iv.difficulty]}22;color:${diffColors[iv.difficulty]}">${iv.difficulty}</span></td>
+      <td>${iv.status==='completed' ? `<span class="score-badge" style="background:${color}22;color:${color}">● ${sc}%</span>` : '—'}</td>
+      <td>${iv.questions?.length || 0} / ${iv.totalQuestions}</td>
+      <td>${statusEl}</td>
+      <td style="color:var(--muted);font-size:13px">${formatDate(iv.startedAt)}</td>
+      <td>${iv.status==='completed' ? `<button onclick="viewDetail('${iv._id}')" style="background:rgba(124,109,250,0.1);border:1px solid rgba(124,109,250,0.3);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">View</button>` : ''}</td>
+    </tr>`;
+  }
+
+  async function viewDetail(id) {
+    const overlay = document.getElementById('detailOverlay');
+    const content = document.getElementById('detailContent');
+    overlay.classList.add('active');
+    content.innerHTML = `<div class="loading"><div class="spinner"></div> Loading details...</div>`;
+
+    try {
+      const data = await apiRequest(`/interviews/${id}`);
+      const iv = data.interview;
+      document.getElementById('detailTitle').textContent = `${iv.domain} — ${iv.difficulty}`;
+
+      const scoreColor = getScoreColor(iv.overallScore);
+      const scoreLabel = getScoreLabel(iv.overallScore);
+
+      content.innerHTML = `
+        <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+          <div style="background:${scoreColor}22;border:1px solid ${scoreColor}44;border-radius:12px;padding:16px 24px;text-align:center;flex:1;min-width:100px">
+            <div style="font-size:32px;font-weight:800;font-family:'Syne',sans-serif;color:${scoreColor}">${iv.overallScore}%</div>
+            <div style="font-size:13px;color:var(--muted)">${scoreLabel}</div>
+          </div>
+          <div style="flex:3;background:var(--surface2);border-radius:12px;padding:16px 20px">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📝 Overall Feedback</div>
+            <div style="font-size:14px;line-height:1.6">${iv.overallFeedback || 'No feedback available'}</div>
+          </div>
+        </div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:16px;font-family:'Syne',sans-serif">Questions & Answers</div>
+        ${iv.questions.map((q, i) => {
+          const qColor = getScoreColor(q.score * 10);
+          return `<div class="q-item">
+            <div class="q-num">Question ${i+1}</div>
+            <div class="q-text">${q.question}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Your answer:</div>
+            <div class="q-answer">${q.userAnswer || '<em>No answer provided</em>'}</div>
+            <span class="q-score" style="background:${qColor}22;color:${qColor}">${q.score}/10</span>
+            <div class="q-feedback">${q.feedback || 'No feedback'}</div>
+          </div>`;
+        }).join('')}
+      `;
+    } catch (e) {
+      content.innerHTML = `<div style="color:var(--error);text-align:center;padding:40px">Failed to load details</div>`;
+    }
+  }
+
+  function closeDetail() {
+    document.getElementById('detailOverlay').classList.remove('active');
+  }
+
+  document.getElementById('detailOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('detailOverlay')) closeDetail();
+  });
+</script>
+</body>
+</html>

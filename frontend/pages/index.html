@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IntelliqAI — AI Interview Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #1a0e00;
+        --surface: #2e1800;
+        --surface2: #3d2200;
+        --border: rgba(255, 140, 0, 0.12);
+        --accent: #ff8c00;
+        --accent2: #ffb347;
+        --accent3: #ffe066;
+        --text: #fff5e0;
+        --muted: #7a5a2a;
+        --success: #7fff6b;
+        --error: #ff4f4f;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5 {
+        font-family: "Syne", sans-serif;
+      }
+
+      /* ---- NOISE OVERLAY ---- */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ---- GLOW ORBS ---- */
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(100px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: rgba(124, 109, 250, 0.12);
+        top: -200px;
+        left: -200px;
+        animation: float1 8s ease-in-out infinite;
+      }
+      .orb-2 {
+        width: 400px;
+        height: 400px;
+        background: rgba(232, 121, 249, 0.1);
+        bottom: -100px;
+        right: -100px;
+        animation: float2 10s ease-in-out infinite;
+      }
+      .orb-3 {
+        width: 300px;
+        height: 300px;
+        background: rgba(34, 211, 238, 0.08);
+        top: 50%;
+        left: 50%;
+        animation: float3 12s ease-in-out infinite;
+      }
+
+      @keyframes float1 {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(40px, 30px);
+        }
+      }
+      @keyframes float2 {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-30px, -40px);
+        }
+      }
+      @keyframes float3 {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+      }
+
+      /* ---- LAYOUT ---- */
+      .page {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+      }
+
+      /* ---- NAV ---- */
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 40px;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .logo {
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+
+      .logo span {
+        color: white;
+        -webkit-text-fill-color: white;
+      }
+
+      /* ---- HERO ---- */
+      .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 70px);
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(124, 109, 250, 0.1);
+        border: 1px solid rgba(124, 109, 250, 0.3);
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 13px;
+        color: var(--accent);
+        margin-bottom: 32px;
+      }
+
+      .badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .hero h1 {
+        font-size: clamp(40px, 7vw, 80px);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        margin-bottom: 24px;
+      }
+
+      .hero h1 .gradient {
+        background: linear-gradient(
+          135deg,
+          var(--accent) 0%,
+          var(--accent2) 50%,
+          var(--accent3) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero p {
+        font-size: clamp(16px, 2.5vw, 20px);
+        color: var(--muted);
+        max-width: 600px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+      }
+
+      .cta-group {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .btn-primary-custom {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none;
+        color: white;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(124, 109, 250, 0.4);
+        color: white;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-family: "Syne", sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-ghost:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-2px);
+      }
+
+      /* ---- STATS ROW ---- */
+      .stats-row {
+        display: flex;
+        gap: 40px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 60px;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+      .stat-item .num {
+        font-family: "Syne", sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .stat-item .label {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      /* ---- FEATURES ---- */
+      .features {
+        padding: 80px 40px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .features h2 {
+        text-align: center;
+        font-size: 40px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        letter-spacing: -1px;
+      }
+      .features .sub {
+        text-align: center;
+        color: var(--muted);
+        margin-bottom: 56px;
+        font-size: 17px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .feature-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .feature-card:hover {
+        border-color: rgba(124, 109, 250, 0.3);
+        transform: translateY(-4px);
+      }
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 16px;
+      }
+
+      .feature-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .feature-card p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* ---- MODAL ---- */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 40px;
+        width: 100%;
+        max-width: 440px;
+        margin: 20px;
+        transform: translateY(30px);
+        transition: transform 0.3s;
+      }
+      .modal-overlay.active .modal-box {
+        transform: translateY(0);
+      }
+
+      .modal-title {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .modal-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 28px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .form-input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        transition: border-color 0.2s;
+        outline: none;
+      }
+      .form-input:focus {
+        border-color: var(--accent);
+      }
+      .form-input::placeholder {
+        color: var(--muted);
+      }
+
+      .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none;
+        color: white;
+        padding: 14px;
+        border-radius: 10px;
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 8px;
+      }
+      .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 30px rgba(124, 109, 250, 0.4);
+      }
+      .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .modal-switch {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .modal-switch a {
+        color: var(--accent);
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 22px;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+      }
+      .modal-close:hover {
+        color: var(--text);
+      }
+      .modal-box {
+        position: relative;
+      }
+
+      .error-msg {
+        color: var(--error);
+        font-size: 13px;
+        margin-top: 6px;
+        display: none;
+      }
+      .error-msg.show {
+        display: block;
+      }
+
+      /* ---- DOMAIN GRID ---- */
+      .domains {
+        padding: 0 40px 80px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .domains h2 {
+        text-align: center;
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 40px;
+        letter-spacing: -1px;
+      }
+      .domain-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .domain-chip {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 8px 20px;
+        font-size: 14px;
+        color: var(--muted);
+        transition: all 0.2s;
+      }
+      .domain-chip:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* ---- FOOTER ---- */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 30px 40px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 16px 20px;
+        }
+        .hero {
+          padding: 40px 20px;
+        }
+        .features,
+        .domains {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="page">
+      <!-- NAV -->
+      <nav>
+        <!-- <div class="logo">intelliq<span>AI</span></div> -->
+        <div class="d-flex gap-3">
+          <button
+            class="btn-ghost"
+            style="padding: 10px 20px; font-size: 14px"
+            onclick="openModal('login')"
+          >
+            Log in
+          </button>
+          <button
+            class="btn-primary-custom"
+            style="padding: 10px 20px; font-size: 14px"
+            onclick="openModal('signup')"
+          >
+            Get Started
+          </button>
+        </div>
+      </nav>
+
+      <!-- HERO -->
+      <section class="hero">
+        <h1>
+          Master Every<br />
+          <span class="gradient">Technical Interview</span>
+        </h1>
+        <p>
+          Dynamic AI-driven interviews tailored to your domain and skill level.
+          Get real-time feedback, track your progress, and land your dream job.
+        </p>
+        <div class="cta-group">
+          <button class="btn-primary-custom" onclick="openModal('signup')">
+            Start Practicing Free →
+          </button>
+          <button class="btn-ghost" onclick="openModal('login')">
+            Sign In
+          </button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="num">20+</div>
+            <div class="label">Tech Domains</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">4</div>
+            <div class="label">Difficulty Levels</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">∞</div>
+            <div class="label">Unique Questions</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">AI</div>
+            <div class="label">Real-time Feedback</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="features">
+        <h2>Everything You Need to <span class="gradient">Succeed</span></h2>
+        <p class="sub">
+          Comprehensive interview preparation powered by cutting-edge AI
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(124, 109, 250, 0.1)"
+            >
+              🤖
+            </div>
+            <h3>Dynamic AI Questions</h3>
+            <p>
+              Claude AI generates unique, never-repeated questions every
+              session. No two interviews are the same.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(232, 121, 249, 0.1)"
+            >
+              📊
+            </div>
+            <h3>Performance Analytics</h3>
+            <p>
+              Track your progress over time with detailed charts, scores per
+              domain, and improvement trends.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(34, 211, 238, 0.1)"
+            >
+              🎯
+            </div>
+            <h3>Instant Feedback</h3>
+            <p>
+              Get detailed, actionable feedback on every answer with strengths,
+              weaknesses, and correct explanations.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(16, 185, 129, 0.1)"
+            >
+              📹
+            </div>
+            <h3>Camera Practice</h3>
+            <p>
+              Enable your webcam to simulate real interview conditions and
+              practice body language simultaneously.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(249, 115, 22, 0.1)"
+            >
+              🎓
+            </div>
+            <h3>Multi-Domain Support</h3>
+            <p>
+              From JavaScript and Python to System Design and ML — we cover
+              every technical domain.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(245, 158, 11, 0.1)"
+            >
+              📁
+            </div>
+            <h3>Interview History</h3>
+            <p>
+              Review every past interview in detail — questions, your answers,
+              feedback, and score breakdown.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOMAINS -->
+      <section class="domains">
+        <h2>20+ Tech Domains</h2>
+        <div class="domain-grid" id="domainChips"></div>
+      </section>
+
+      <footer>
+        <p>© 2025 IntelliqAI · BangGang · All rights reserved</p>
+      </footer>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal-overlay" id="loginModal">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('login')">✕</button>
+        <div class="modal-title">Welcome back</div>
+        <div class="modal-sub">Sign in to continue your practice</div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input
+            class="form-input"
+            type="email"
+            id="loginEmail"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input
+            class="form-input"
+            type="password"
+            id="loginPassword"
+            placeholder="Your password"
+          />
+        </div>
+        <div class="error-msg" id="loginError"></div>
+        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
+          Sign In
+        </button>
+        <div class="modal-switch">
+          Don't have an account?
+          <a onclick="switchModal('login', 'signup')">Create one</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div class="modal-overlay" id="signupModal">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('signup')">✕</button>
+        <div class="modal-title">Create account</div>
+        <div class="modal-sub">
+          Join thousands of developers practicing smarter
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input
+            class="form-input"
+            type="text"
+            id="signupName"
+            placeholder="John Doe"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input
+            class="form-input"
+            type="email"
+            id="signupEmail"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input
+            class="form-input"
+            type="password"
+            id="signupPassword"
+            placeholder="Min. 6 characters"
+          />
+        </div>
+        <div class="error-msg" id="signupError"></div>
+        <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
+          Create Account
+        </button>
+        <div class="modal-switch">
+          Already have an account?
+          <a onclick="switchModal('signup', 'login')">Sign in</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+      // Redirect if already logged in
+      if (Auth.isLoggedIn()) {
+        window.location.href = "dashboard.html";
+      }
+
+      // Render domain chips
+      const domains = [
+        "JavaScript",
+        "Python",
+        "Java",
+        "C++",
+        "React",
+        "Node.js",
+        "Data Structures",
+        "Algorithms",
+        "System Design",
+        "Database",
+        "Machine Learning",
+        "DevOps",
+        "Cybersecurity",
+        "PHP",
+        "TypeScript",
+        "Vue.js",
+        "Angular",
+        "MongoDB",
+        "SQL",
+        "AWS",
+        "Docker",
+      ];
+      const grid = document.getElementById("domainChips");
+      domains.forEach((d) => {
+        const chip = document.createElement("div");
+        chip.className = "domain-chip";
+        chip.textContent = d;
+        grid.appendChild(chip);
+      });
+
+      function openModal(type) {
+        document.getElementById(`${type}Modal`).classList.add("active");
+      }
+
+      function closeModal(type) {
+        document.getElementById(`${type}Modal`).classList.remove("active");
+      }
+
+      function switchModal(from, to) {
+        closeModal(from);
+        setTimeout(() => openModal(to), 200);
+      }
+
+      // Close on overlay click
+      document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) overlay.classList.remove("active");
+        });
+      });
+
+      // Enter key support
+      document
+        .getElementById("loginPassword")
+        .addEventListener("keydown", (e) => e.key === "Enter" && handleLogin());
+      document
+        .getElementById("signupPassword")
+        .addEventListener(
+          "keydown",
+          (e) => e.key === "Enter" && handleSignup(),
+        );
+
+      async function handleLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const errEl = document.getElementById("loginError");
+        const btn = document.getElementById("loginBtn");
+
+        errEl.classList.remove("show");
+
+        if (!email || !password) {
+          errEl.textContent = "Please fill in all fields";
+          errEl.classList.add("show");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Signing in...";
+
+        try {
+          const data = await apiRequest("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+          });
+
+          Auth.setToken(data.token);
+          Auth.setUser(data.user);
+          showToast("Welcome back! Redirecting...", "success");
+          setTimeout(() => (window.location.href = "dashboard.html"), 1000);
+        } catch (error) {
+          errEl.textContent = error.message;
+          errEl.classList.add("show");
+          btn.disabled = false;
+          btn.textContent = "Sign In";
+        }
+      }
+
+      async function handleSignup() {
+        const name = document.getElementById("signupName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value;
+        const errEl = document.getElementById("signupError");
+        const btn = document.getElementById("signupBtn");
+
+        errEl.classList.remove("show");
+
+        if (!name || !email || !password) {
+          errEl.textContent = "Please fill in all fields";
+          errEl.classList.add("show");
+          return;
+        }
+
+        if (password.length < 6) {
+          errEl.textContent = "Password must be at least 6 characters";
+          errEl.classList.add("show");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Creating account...";
+
+        try {
+          const data = await apiRequest("/auth/register", {
+            method: "POST",
+            body: JSON.stringify({ name, email, password }),
+          });
+
+          Auth.setToken(data.token);
+          Auth.setUser(data.user);
+          showToast("Account created! Welcome to IntelliqAI!", "success");
+          setTimeout(() => (window.location.href = "dashboard.html"), 1000);
+        } catch (error) {
+          errEl.textContent = error.message;
+          errEl.classList.add("show");
+          btn.disabled = false;
+          btn.textContent = "Create Account";
+        }
+      }
+    </script>
+  </body>
+</html>
