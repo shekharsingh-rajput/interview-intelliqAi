@@ -3,6 +3,9 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   ? 'http://localhost:5000/api'
   : 'https://interview-intelliqai.onrender.com/api';
 
+
+
+
 // Token management
 const Auth = {
   setToken: (token) => localStorage.setItem('ip_token', token),
@@ -17,7 +20,7 @@ const Auth = {
   logout: () => {
     localStorage.removeItem('ip_token');
     localStorage.removeItem('ip_user');
-    window.location.href = '/pages/index.html';
+    window.location.href = '/';
   }
 };
 
