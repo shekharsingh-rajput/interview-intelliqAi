@@ -1,7 +1,7 @@
 // API Configuration
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'https://interview-api.onrender.com/api'
-  : '/api'; // Same origin in production
+  ? 'http://localhost:5000/api'
+  : 'https://interview-intelliqai.onrender.com/api';
 
 // Token management
 const Auth = {
