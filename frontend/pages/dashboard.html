@@ -64,7 +64,7 @@
     }
 
     .user-info .name { font-weight: 600; font-size: 14px; }
-    .user-info .email { font-size: 12px; color: var(--muted); }
+    .user-info .email { font-size: 12px; color: var(--muted); overflow-wrap: break-word; }
 
     .nav-links { flex: 1; padding: 16px 12px; overflow-y: auto; }
 
@@ -329,21 +329,25 @@
   </div>
   <nav class="nav-links">
     <a class="nav-link active" onclick="showTab('overview')" id="tab-overview">
-      <span class="icon">📊</span> Overview
+      <span class="icon"></span> Overview
     </a>
     <a class="nav-link" onclick="showTab('start')" id="tab-start">
-      <span class="icon">🚀</span> New Interview
+      <span class="icon"></span> New Interview
     </a>
     <a class="nav-link" onclick="showTab('history')" id="tab-history">
-      <span class="icon">📁</span> History
+      <span class="icon"></span> History
     </a>
   </nav>
   <div class="sidebar-footer">
     <button class="btn-logout" onclick="Auth.logout()">
-      <span>🚪</span> Sign Out
+      <span></span> Sign Out
     </button>
   </div>
 </aside>
+
+
+
+
 
 <!-- MAIN -->
 <div class="main">
