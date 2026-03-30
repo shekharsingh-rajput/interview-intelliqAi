@@ -420,7 +420,7 @@
             <button class="diff-btn" onclick="selectDiff(this,'Beginner')"> Beginner</button>
             <button class="diff-btn" onclick="selectDiff(this,'Intermediate')"> Intermediate</button>
             <button class="diff-btn" onclick="selectDiff(this,'Advanced')"> Advanced</button>
-            <button class="diff-btn" onclick="selectDiff(this,'Expert')">🔴 Expert</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Expert')"> Expert</button>
           </div>
 
           <div class="card-title">Number of Questions</div>
@@ -537,8 +537,23 @@
   }
 
   function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.querySelector('.menu-toggle'); // change to your toggle button's selector
+
+  sidebar.classList.toggle('open');
+
+  if (sidebar.classList.contains('open')) {
+    function handleOutsideClick(e) {
+      if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+        sidebar.classList.remove('open');
+        document.removeEventListener('click', handleOutsideClick);
+      }
+    }setTimeout(() => {
+      document.addEventListener('click', handleOutsideClick);
+      }, 0);
+    }
   }
+  
 
   function selectDomain(btn, domain) {
     document.querySelectorAll('.domain-btn').forEach(b => b.classList.remove('selected'));
