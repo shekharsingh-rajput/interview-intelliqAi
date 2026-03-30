@@ -17,8 +17,8 @@
       --accent: #7c6dfa;
       --accent2: #e879f9;
       --accent3: #22d3ee;
-      --text: #f0f0f5;
-      --muted: #6b7280;
+      --text:  #f0f0f5;
+      --muted: rgb(0, 85, 255);
       --success: #10b981;
       --error: #ef4444;
       --warning: #f59e0b;
@@ -137,7 +137,7 @@
     .stat-card.orange::before { background: linear-gradient(90deg, var(--warning), #fb923c); }
 
     .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-val { font-size: 36px; font-weight: 800; font-family: 'Syne', sans-serif; }
+    .stat-val { font-size: 35px; font-weight: 600; font-family: 'Syne', sans-serif; }
     .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
     /* CHART CARDS */
@@ -384,17 +384,17 @@
 
       <div class="chart-grid">
         <div class="card">
-          <div class="card-title">📈 Score History</div>
+          <div class="card-title"> Score History</div>
           <canvas id="scoreChart" height="100"></canvas>
         </div>
         <div class="card">
-          <div class="card-title">🎯 Domain Performance</div>
+          <div class="card-title"> Domain Performance</div>
           <canvas id="domainChart" height="200"></canvas>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">⚡ Recent Interviews</div>
+        <div class="card-title"> Recent Interviews</div>
         <div id="recentList">
           <div class="loading"><div class="spinner"></div> Loading...</div>
         </div>
@@ -413,9 +413,9 @@
 
           <div class="card-title">Difficulty Level</div>
           <div class="difficulty-row" id="difficultySelect">
-            <button class="diff-btn" onclick="selectDiff(this,'Beginner')">🟢 Beginner</button>
-            <button class="diff-btn" onclick="selectDiff(this,'Intermediate')">🟡 Intermediate</button>
-            <button class="diff-btn" onclick="selectDiff(this,'Advanced')">🟠 Advanced</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Beginner')"> Beginner</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Intermediate')"> Intermediate</button>
+            <button class="diff-btn" onclick="selectDiff(this,'Advanced')"> Advanced</button>
             <button class="diff-btn" onclick="selectDiff(this,'Expert')">🔴 Expert</button>
           </div>
 
